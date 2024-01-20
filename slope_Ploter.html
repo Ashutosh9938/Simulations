@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graph Plotter</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      background-color: rgb(171, 164, 189);
+      font-family: 'Arial', sans-serif;
+      text-align: center;
+      margin: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    label {
+      display: block;
+      margin: 10px 0;
+    }
+
+    input {
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin-top: 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    canvas {
+      max-width: 600px;
+      max-height: 400px;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+<body>
+  <h1>Graph Plotter</h1>
+  <label for="x1">Enter x1:</label>
+  <input type="number" id="x1" required>
+  <label for="y1">Enter y1:</label>
+  <input type="number" id="y1" required>
+  <label for="x2">Enter x2:</label>
+  <input type="number" id="x2" required>
+  <label for="y2">Enter y2:</label>
+  <input type="number" id="y2" required><br>
+  <button onclick="calculateAndPlot()">Calculate and Plot</button><br>
+  <canvas id="myChart"></canvas>
+  <p id="result"></p>
+
+  <script>
+    function calculateAndPlot() {
+      const x1 = parseFloat(document.getElementById('x1').value);
+      const y1 = parseFloat(document.getElementById('y1').value);
+      const x2 = parseFloat(document.getElementById('x2').value);
+      const y2 = parseFloat(document.getElementById('y2').value); 
+
+      if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) {
+        alert('Please enter valid numeric values in all fields.');
+        return;
+      }
+
+      const slope = (y2 - y1) / (x2 - x1);
+
+      document.getElementById('myChart').remove();  // Remove existing canvas
+      const canvas = document.createElement('canvas');
+      canvas.id = 'myChart';
+      document.body.appendChild(canvas);
+
+      const ctx = canvas.getContext('2d');
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [`(${x1}, ${y1})`, `(${x2}, ${y2})`],
+          datasets: [{
+            label: 'Line Plot',
+            data: [{x: x1, y: y1}, {x: x2, y: y2}],
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 2,
+            pointBackgroundColor: ['red', 'blue'],
+            pointRadius: 6,
+          }]
+        },
+        options: {
+          scales: {
+            x: { type: 'linear', position: 'bottom' },
+            y: { type: 'linear', position: 'left' }
+          }
+        }
+      });
+
+      const resultElement = document.getElementById('result');
+      resultElement.innerHTML = determineLineRelationship(slope);
+    }
+
+    function determineLineRelationship(slope) {
+      const referenceSlopeParallel = 1;  // Slope for parallel lines
+      const referenceSlopePerpendicular = -1;  // Slope for perpendicular lines
+      const tolerance = 0.01;  // Tolerance for considering slopes equal
+
+      if (Math.abs(slope - referenceSlopeParallel) < tolerance) {
+        return 'The lines are parallel.';
+      } else if (Math.abs(slope * referenceSlopePerpendicular + 1) < tolerance) {
+        return 'The lines are perpendicular.';
+      } else {
+        return 'The lines are neither parallel nor perpendicular.';
+      }
+    }
+  </script>
+</body>
+</html>

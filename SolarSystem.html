@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { margin: 0; }
+    </style>
+    <title>3D Rotating Solar System</title>
+</head>
+<body>
+    <script type="module">
+        import * as THREE from 'https://threejs.org/build/three.module.js';
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+
+        const sunGeometry = new THREE.SphereGeometry(40, 32, 32);
+        const sunMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+        const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+        scene.add(sun);
+
+        const createPlanet = (radius, distance, color, orbitInclination, orbitSpeed) => {
+            const planetGeometry = new THREE.SphereGeometry(radius * 2, 32, 32);
+            const planetMaterial = new THREE.MeshBasicMaterial({ color });
+            const planet = new THREE.Mesh(planetGeometry, planetMaterial);
+
+            // Set the planet's position based on its orbit inclination
+            const x = distance * Math.cos(orbitInclination);
+            const z = distance * Math.sin(orbitInclination);
+            planet.position.set(x, 0, z);
+
+            scene.add(planet);
+
+            // Add custom properties for orbit calculation
+            planet.orbitRadius = distance;
+            planet.orbitInclination = orbitInclination;
+            planet.orbitSpeed = orbitSpeed;
+
+            return planet;
+        };
+
+        const mercury = createPlanet(2, 40, 0xd3d3d3, Math.PI / 6, 0.01);
+        const venus = createPlanet(4, 60, 0xffcc00, Math.PI / 4, 0.008);
+        const earth = createPlanet(5, 80, 0x0000ff, Math.PI / 3, 0.005);
+        const mars = createPlanet(3, 110, 0xff0000, Math.PI / 2, 0.003);
+        const jupiter = createPlanet(8, 150, 0xffa500, Math.PI, 0.001);
+        const saturn = createPlanet(6, 200, 0xffd700, Math.PI * 1.25, 0.0008);
+        const uranus = createPlanet(5, 250, 0x00ffff, Math.PI * 1.5, 0.0006);
+        const neptune = createPlanet(4, 300, 0x000080, Math.PI * 1.75, 0.0005);
+
+        camera.position.z = 500;
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+
+            // Rotate the entire solar system
+            scene.rotation.y += 0.001;
+
+            // Rotate individual planets and update their orbits
+            mercury.rotation.y += 0.01;
+            venus.rotation.y += 0.008;
+            earth.rotation.y += 0.005;
+            mars.rotation.y += 0.003;
+            jupiter.rotation.y += 0.001;
+            saturn.rotation.y += 0.0008;
+            uranus.rotation.y += 0.0006;
+            neptune.rotation.y += 0.0005;
+
+            updateOrbits();
+
+            renderer.render(scene, camera);
+        };
+
+        const updateOrbits = () => {
+            scene.children.forEach((child) => {
+                if (child !== sun) {
+                    child.orbitInclination += child.orbitSpeed;
+
+                    const x = child.orbitRadius * Math.cos(child.orbitInclination);
+                    const z = child.orbitRadius * Math.sin(child.orbitInclination);
+
+                    child.position.set(x, 0, z);
+                }
+            });
+        };
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
